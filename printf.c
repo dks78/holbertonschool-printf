@@ -110,10 +110,9 @@ int _printf(const char *format, ...)
 
     va_end(args);
 
-    buffer[len] = '\0';
-    for (i = 0; i < len; i++)
+    if (len > 0)
     {
-        _putchar(buffer[i]);
+        write(STDOUT_FILENO, buffer, len);
     }
 
     free(buffer);

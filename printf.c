@@ -24,30 +24,30 @@ int _printf(const char *format, ...)
             if (format[i] == 'c')
             {
                 char c = va_arg(args, int);
-                putchar(c);
+                _putchar(c);
             }
             else if (format[i] == 's') 
             {
                 char *str = va_arg(args, char*);
                 while (*str)
                 {
-                    putchar(*str);
+                    _putchar(*str);
                     str++;
                 }
             }
             else if (format[i] == '%')
             {
-                putchar('%');
+                _putchar('%');
             }
             else
             {
-                putchar('%');
-                putchar(format[i]);
+                _putchar('%');
+                _putchar(format[i]);
             }
         }
         else
         {
-            putchar(format[i]);
+            _putchar(format[i]);
         }
     }
 

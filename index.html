@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Secrets de printf</title>
+</head>
+<style>
+    p {
+        font-size: 20px;
+        font-weight: 600;
+    }
+</style>
+
+<body class="bg-light text-dark">
+    <div class="container mt-5">
+        <h1 class="text-center fw-bold">Les Secrets de printf</h1>
+        <p class="text-center text-muted">Professeur Don Colton<br>Université Brigham Young Hawaii</p>
+        <p>
+            <strong>printf</strong> est une fonction du langage C permettant d'effectuer des impressions formatées. La
+            même fonction est également disponible en PERL. Cet article explique comment fonctionne
+            <strong>printf</strong> et comment concevoir une spécification de format adaptée à chaque occasion.
+        </p>
+        <hr>
+
+        <h2 class="fw-bold">1. Contexte</h2>
+        <p>
+            Aux premiers jours de l'informatique, les programmeurs écrivaient leurs propres sous-programmes pour lire et
+            imprimer des nombres. Ce n'était pas très difficile :
+        </p>
+        <ul>
+            <li>Allouer un tableau de caractères pour contenir le résultat.</li>
+            <li>Diviser le nombre par dix, garder le reste, ajouter <code>x30</code> (valeur ASCII pour '0') et le
+                stocker à la fin du tableau.</li>
+            <li>Répéter jusqu'à ce que tous les chiffres soient trouvés, puis imprimer le tableau.</li>
+        </ul>
+        <p>
+            Mais même si cela semblait simple (pour Einstein), cela demandait encore des efforts, notamment pour la
+            gestion des erreurs et des nombres négatifs. C'est pourquoi les programmeurs ont créé des bibliothèques de
+            fonctions préenregistrées. Ces bibliothèques ont été intégrées aux bibliothèques dites « standards ». Ainsi,
+            <strong>printf</strong> est né.
+        </p>
+        <hr>
+
+        <h2 class="fw-bold">2. Impression simple</h2>
+        <p>
+            Dans le cas le plus simple, <strong>printf</strong> prend un seul argument : une chaîne de caractères à
+            imprimer. Cette chaîne est composée de caractères imprimés exactement comme ils apparaissent.
+        </p>
+        <p>
+            Exemple : <code>printf("xyz");</code> affiche simplement <code>x</code>, puis <code>y</code>, et enfin
+            <code>z</code>.
+        </p>
+        <hr>
+
+        <h3 class="fw-bold">2.1 Caractères naturellement spéciaux</h3>
+
+        Pour identifier le début de la chaîne, nous mettons un guillemet (") au début. Pour identifier la fin de la
+        chaîne, nous mettons un autre guillemet à la fin. Mais que faire si nous voulons réellement imprimer un
+        guillemet? Nous ne pouvons pas exactement mettre un guillemet au milieu de la chaîne car il serait pris pour
+        le marqueur de fin de chaîne. Le guillemet est un caractère spécial. Les règles normales d'impression de ce
+        que vous voyez ne s'appliquent pas.
+
+        Les différents langages adoptent des approches différentes à ce problème. Certains exigent que le caractère
+        spécial soit entré deux fois. C utilise la barre oblique inversée (\\) comme caractère d'échappement pour
+        changer le sens du prochain caractère après elle. Ainsi, pour imprimer un guillemet, vous tapez barre
+        oblique inversée guillemet. Pour imprimer une barre oblique inversée, vous devez l'échapper en tapant une
+        autre barre oblique inversée devant elle. La première barre oblique inversée signifie "donner le sens
+        alternatif au prochain caractère". La deuxième barre oblique inversée a un sens alternatif de "imprimer une
+        barre oblique inversée".
+
+        Sans barre oblique inversée, les caractères spéciaux ont une signification naturelle spéciale. Avec une
+        barre oblique inversée, ils s'impriment tels qu'ils apparaissent. Voici une liste partielle.
+        <ul>
+            <li><code>\</code> : échappe le caractère suivant.</li>
+            <li><code>\\</code> : imprime une barre oblique inversée.</li>
+            <li><code>\"</code> : imprime un guillemet double.</li>
+            <li><code>%</code> : début d'une spécification de format.</li>
+            <li><code>\%</code> : imprime un signe de pourcentage.</li>
+        </ul>
+        <hr>
+
+        <h3 class="fw-bold">2.2 Caractères alternativement spéciaux</h3>
+        <p>
+
+            D'un autre côté, nous avons des caractères qui s'impriment normalement comme vous vous y attendriez,
+            mais lorsque vous ajoutez une barre oblique inversée, ils deviennent spéciaux. Un exemple est le
+            caractère de nouvelle ligne. Pour imprimer un n, nous tapons simplement un n. Pour imprimer une nouvelle
+            ligne, nous tapons \n,
+            invoquant ainsi la signification alternative de n,
+            qui est nouvelle ligne. Voici une liste partielle :
+        </p>
+        <ul>
+            <li><code>\n</code> : Nouvelle ligne.</li>
+            <li><code>\t</code> : Tabulation.</li>
+            <li><code>\a</code> : Alerte sonore (bip).</li>
+            <li><code>\b</code> : Retour arrière.</li>
+            <li><code>\f</code> : Saut de page.</li>
+            <li><code>\r</code> : Retour chariot.</li>
+            <li><code>\v</code> : Tabulation verticale.</li>
+        </ul>
+        <ul>
+            <li>
+                <code>%c</code> imprimer un caractère unique
+            </li>
+            <li>
+                <code>%d</code> imprimer un nombre décimal (base 10)
+            </li>
+            <li>
+                <code>%e</code> imprimer un nombre flottant exponentiel
+            </li>
+            <li>
+                <code>%f</code> :imprimer un nombre flottant
+            </li>
+            <li>
+                <code>%g</code> : imprimer un nombre flottant au format général
+            </li>
+            <li>
+                <code>%i</code> :imprimer un entier en base 10
+            </li>
+            <li>
+                <code>%o</code> :imprimer un nombre en octal (base 8)
+            </li>
+            <li>
+                <code>%s</code> :imprimer une chaîne de caractères
+            </li>
+            <li>
+                <code>%u</code> :imprimer un nombre décimal non signé (base 10)
+            </li>
+            <li>
+                <code>%x</code> :imprimer un nombre en hexadécimal (base 16)
+            </li>
+            <li>
+                <code>%%</code> :imprimer un signe de pourcentage (\% fonctionne également)
+            </li>
+        </ul>
+        <h3 class="fw-bold">3 CFormat Specifications</h3>
+        <p>
+            La véritable puissance de printf réside dans l'impression du contenu des variables. Prenons par exemple le
+            spécificateur de format %d. Cela imprime un nombre. Donc, un nombre doit être fourni pour l'impression.
+            Cela se fait en ajoutant un autre argument à l'instruction printf, comme illustré ici.
+        </p>
+        <code>
+                <P>int age; </P> 
+                <p>age = 25; </p>
+                <p>printf("I am %d years old\n", age);</p> 
+            </code>
+        <p>
+            Dans cet exemple, printf a deux arguments. Le premier est une chaîne : "I am %d years old\n". Le second est
+            un entier, age. Pour imprimer un nombre de manière simple,
+            le spécificateur de format est
+            simplement %d. Voici quelques exemples
+            de cas et les résultats correspondants.
+        </p>
+        <code>
+                <P>
+                printf produit 
+                <br>
+                ("%d",0)         0 
+                <br>
+                ("%d",-7)         -7 
+                <br>
+                ("%d",1560133635) 1560133635 
+                <br>
+                ("%d",-2035065302) -2035065302
+                <br>
+            </P>
+            </code>
+        <P>
+            Remarquez que de manière simple,
+            avec %d, il n'y a pas de
+            taille prédéterminée pour le résultat.
+            printf prend simplement autant d'espace que nécessaire.
+        </P>
+        <h3 class="fw-bold">3.1 La Liste des Arguments</h3>
+        <p>Lorsque printf traite ses arguments, il commence à imprimer les caractères qu'il trouve dans le
+            premier argument, un par un. Lorsqu'il trouve un pourcentage,
+            il sait qu'il a une spécification de format. Il passe à l'argument suivant et utilise sa valeur,
+            l'imprimant selon cette spécification de format. Ensuite, il revient à imprimer un caractère à la fois (à
+            partir du premier argument).
+            Il est possible d'inclure plus d'une spécification
+            de format dans la chaîne printf. Dans ce cas, la première spécification de format correspond
+            au premier argument supplémentaire, la seconde correspond au deuxième,
+            et ainsi de suite. Voici un exemple :
+        </p>
+        <code>
+                <p>int x = 5, y = 10;</p>
+                <p>printf("x is %d and y is %d\n", x, y);</p>
+            </code>
+        <h3 class="fw-bold">3.2 Pourcentage</h3>
+        <p>
+            Chaque spécification de format commence par un signe de pourcentage et se termine par une lettre.
+            Les lettres sont choisies pour avoir une signification mnémotechnique.
+            Voici une liste partielle :
+            Pour les nombres, il n'y a pas de remplissage, et le nombre complet
+            est imprimé. Dans une utilisation normale, on ferait en sorte que le champ soit
+            suffisamment large pour le plus grand nombre que l'on pourrait attendre. Si vos
+            nombres sont habituellement d'une, deux ou trois chiffres, alors %3d est probablement
+            adéquat. Dans une utilisation anormale, on pourrait finir par imprimer un nombre
+            trop grand pour le champ. printf prend la décision d'imprimer ces nombres en entier,
+            même s'ils prennent trop de place. Cela s'explique par le fait qu'il est préférable
+            d'imprimer la bonne réponse et d'avoir un rendu peu
+            esthétique que d'imprimer la mauvaise réponse et d'avoir un rendu esthétique.
+        </p>
+        <h3 class="fw-bold">3.2 L'Option de Largeur</h3>
+        <p>
+            Pour imprimer un nombre avec une certaine largeur (minimum), disons 5
+            espaces de large, le spécificateur de format est %5d. Cela garantit que l
+            e nombre occupe cinq espaces (plus si nécessaire, mais jamais moins).
+            C'est très utile pour imprimer des tableaux où les petits et grands nombres
+            prennent la même quantité d'espace. La plupart des impressions étaient à espacement fixe,
+            ce qui signifie que toutes les lettres et chiffres occupent la même quantité d'espace.
+            Voici quelques exemples de cas et les résultats correspondants.
+            (Nous utiliserons le symbole pour indiquer explicitement un espace.)
+        </p>
+        <code>
+                <p>printf produit</p>
+                <p>("%5d",0)    uuuu0</p>
+                <p>("%5d",-7) uuu-7</p>
+                <p>("%5d",1560133635) 1560133635</p>
+                <p>("%5d",-2035065302) -2035065302</p>
+            </code>
+        <p>Remarquez que pour les nombres plus courts, le résultat est rempli avec des espaces en tête. Pour les nombres
+            excessivement
+            longs,
+            printf imprime le nombre en entier, même si cela dépasse la largeur spécifiée.
+        </p>
+        <code>
+                <p>printf produit</p>
+                <p>("%-5d",0) 0uuuu</p>
+                <p>("%-5d",-7) -7uuu</p>
+                <p>("%-5d",1560133635) 1560133635</p>
+                <p>("%-5d",-2035065302) -2035065302</p>
+            </code>
+        <p>
+            Comme précédemment, pour les nombres plus courts, le résultat est complété avec des espaces.
+            Pour les nombres plus longs, il n'y a pas de remplissage, et le nombre n'est pas raccourci.
+        </p>
+        <h3 class="fw-bold">3.4 Remplir l'Espace Supplémentaire</h3>
+        <p>Lorsque vous imprimez un petit nombre comme 27 dans un champ %5d, la question
+            devient où placer le 27 et que mettre dans les trois autres emplacements. Il
+            pourrait être imprimé dans les deux premiers espaces, les deux derniers espaces,
+            ou peut-être les deux espaces du milieu (si cela peut être déterminé). Les espaces
+            vides pourraient être remplis avec le caractère blanc, ou peut-être des étoiles
+            (27 ou 27 ou *27), des signes de dollar ($$$27), des signes égaux (===27), ou des zéros en tête (comme
+            00027).
+            Ces caractères supplémentaires sont souvent appelés caractères de "protection des chèques"
+            car ils sont destinés à empêcher les personnes malveillantes de changer le montant en dollars
+            sur un chèque imprimé. Il est relativement facile de changer un espace en autre chose.
+            Il est plus difficile de changer une étoile, un signe de dollar ou un signe égal.
+            printf offre un remplissage par des espaces (à gauche ou à droite) et par des zéros
+            (à gauche uniquement). Si vous voulez une protection des chèques ou un centrage,
+            vous devez prendre d'autres dispositions. Mais même sans protection des chèques ou
+            centrage, printf dispose encore d'une collection impressionnante (et déroutante) d'options.
+        </p>
+        <h3 class="fw-bold">3.5 L'Option de Justification</h3>
+        <p>
+            Avec printf, les nombres peuvent être alignés à gauche (imprimés du côté gauche du champ) ou alignés à
+            droite (imprimés du côté droit du champ).
+            La manière la plus naturelle d'imprimer les nombres semble
+            être alignée à droite avec des espaces en tête. C'est ce que
+            signifie %5d : imprimer un nombre en base 10 dans un champ de largeur 5,
+            avec le nombre aligné à droite et précédé par des espaces.
+            Pour aligner le nombre à gauche, un signe moins est ajouté au spécificateur de format.
+            Pour imprimer un nombre de 5 espaces de large et aligné à gauche, le spécificateur
+            de format est %-5d. Voici quelques exemples de cas et les résultats correspondants.
+        </p>
+        <h3 class="fw-bold">3.6 L'Option de Remplissage par Zéros</h3>
+        <p>Pour que les choses soient bien alignées et jolies, il est courant
+            d'écrire une date avec des zéros en tête. Nous pouvons écrire le 5 mai 2003 aux
+            États-Unis comme 05/05/2003. Nous pourrions aussi l'écrire comme 2003.05.05.
+            Remarquez que dans les deux cas, les zéros en tête ne changent pas la signification. I
+            ls permettent juste d'aligner joliment les éléments dans des listes.
+            Lorsque qu'un nombre est rempli de zéros, les zéros vont toujours devant, t le nombre résultant est à la
+            fois aligné à gauche et à droite. Dans ce cas, le signe moins n'a aucun effet. Pour imprimer un nombre
+            rempli de zéros de 5 espaces de large,
+            le spécificateur de format est %05d. Voici quelques exemples de cas et les résultats correspondants.
+        </p>
+        <code>
+                <p>printf produit</p>
+                <p>("%05d",0) 00000</p>
+                <p>("%05d",-7) -0007</p>
+                <p>("%05d",1560133635) 1560133635</p>
+                <p>("%05d",-2035065302)     -2035065302</p>
+            </code>
+        <p>
+            Les nombres plus courts sont remplis de zéros en tête. Les nombres plus longs restent inchangés.
+        </p>
+        <h3 class="fw-bold">3.8 Le Signe Plus Invisible</h3>
+        <p>
+            Celui-ci est un peu bizarre. C'est un signe plus invisible. Au lieu d'imprimer un plus sur les nombres
+            positifs (et zéro), nous imprimons un espace où le signe devrait aller. Cela peut être utile pour imprimer
+            des nombres alignés à gauche où vous voulez que les signes moins se démarquent vraiment. Remarquez ces deux
+            alternatives.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%+-5d",0)            +0</p>
+    <p>("%+-5d",-7)           -7</p>
+    <p>("%+-5d",1560133635)   +1560133635</p>
+    <p>("%+-5d",-2035065302)  -2035065302</p>
+
+    <p>printf produit</p>
+    <p>("%-5d",0)             0</p>
+    <p>("%-5d",-7)            -7</p>
+    <p>("%-5d",1560133635)    1560133635</p>
+    <p>("%-5d",-2035065302)   -2035065302</p>
+</code>
+        <p>
+            Rappelez-vous ce qui précède avec le spécificateur de format %-5d, nous obtenons les résultats suivants
+            (montrés à nouveau pour une comparaison plus facile).
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%-5d",0)             0</p>
+    <p>("%-5d",-7)            -7</p>
+    <p>("%-5d",1560133635)    1560133635</p>
+    <p>("%-5d",-2035065302)   -2035065302</p>
+</code>
+        <p>
+            Remarquez que les signes plus disparaissent, mais le signe prend toujours de la place au début du nombre.
+            Remarquez également que nous pouvons combiner plusieurs options dans le même spécificateur de format. Dans
+            ce cas, nous avons combiné les options plus, moins et cinq, ou espace, moins et cinq, ou juste moins et
+            cinq.
+        </p>
+
+        <h3 class="fw-bold">3.9 Plus, Espace, et Zéro</h3>
+        <p>
+            Voici un autre exemple de combinaison de plusieurs options en même temps. En utilisant le spécificateur de
+            format %05d ou %0+5d, nous obtenons les résultats suivants.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%05d",0)             00000</p>
+    <p>("%05d",-7)            -0007</p>
+    <p>("%05d",1560133635)    1560133635</p>
+    <p>("%05d",-2035065302)   -2035065302</p>
+</code>
+        <p>
+            En utilisant le spécificateur de format %+05d ou %0+5d, nous obtenons les résultats suivants.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%+05d",0)             +0000</p>
+    <p>("%+05d",-7)            -0007</p>
+    <p>("%+05d",1560133635)    +1560133635</p>
+    <p>("%+05d",-2035065302)   -2035065302</p>
+</code>
+        <p>
+            Lorsque nous combinons plus et espace en même temps, l'espace crée de la place pour un signe et le plus
+            l'utilise. C'est comme si l'espace n'était pas spécifié. Le plus a priorité sur l'espace.
+        </p>
+
+        <h3 class="fw-bold">3.10 Résumé</h3>
+        <p>
+            Les options sont également appelées "drapeaux" et peuvent apparaître dans n'importe quel ordre. Voici une
+            liste partielle :
+        </p>
+        <ul>
+            <li><strong>Aucun</strong> : impression normale (justification à droite, remplissage par des espaces)</li>
+            <li><strong>-</strong> : justification à gauche</li>
+            <li><strong>0</strong> : remplissage par des zéros en tête</li>
+            <li><strong>+</strong> : impression du signe plus sur les nombres positifs</li>
+            <li><strong>(espace)</strong> : signe plus invisible</li>
+        </ul>
+        <p>
+            Après les options, si elles existent, la largeur minimale du champ peut être spécifiée.
+        </p>
+
+        <h3 class="fw-bold">4 Impression de Chaînes</h3>
+        <p>
+            L'option %s nous permet d'imprimer une chaîne à l'intérieur d'une chaîne. Voici un exemple.
+        </p>
+        <code>
+    <p>char *grade;</p>
+    <p>if (year == 11) grade = "junior";</p>
+    <p>printf("%s is a %s\n", "Fred", grade);</p>
+</code>
+        <p>
+            Le drapeau de justification à gauche s'applique aux chaînes, mais bien sûr, le remplissage par des zéros, le
+            signe plus et le signe plus invisible sont sans signification.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%5s","")</p>
+    <p>("%5s","a")           a</p>
+    <p>("%5s","ab")          ab</p>
+    <p>("%5s","abcdefg")     abcdefg</p>
+
+    <p>printf produit</p>
+    <p>("%-5s","")           </p>
+    <p>("%-5s","a")          a</p>
+    <p>("%-5s","ab")         ab</p>
+    <p>("%-5s","abcdefg")    abcdefg</p>
+</code>
+
+        <h3 class="fw-bold">5 Point Flottant</h3>
+        <p>
+            Les nombres à virgule flottante sont ceux comme 3.1415 qui ont un point décimal quelque part à l'intérieur.
+            Cela contraste avec les entiers ordinaires comme 27 qui n'ont pas de point décimal.
+        </p>
+        <p>
+            Tous les mêmes drapeaux et règles s'appliquent aux nombres à virgule flottante comme aux entiers, mais nous
+            avons quelques nouvelles options. La plus importante est une façon de spécifier combien de chiffres
+            apparaissent après le point décimal. Ce nombre est appelé la précision du nombre.
+        </p>
+        <p>
+            Pour le commerce ordinaire, les prix sont souvent mentionnés en dollars entiers ou en dollars et cents (zéro
+            ou deux chiffres de précision). Pour l'essence, les prix sont mentionnés en dollars, cents et dixièmes de
+            cent (trois chiffres de précision). Voici quelques exemples de la façon d'imprimer ces types de nombres.
+            Supposons que e=2.718281828.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%.0f",e)            3</p>
+    <p>("%.0f.",e)           3.</p>
+    <p>("%.1f",e)            2.7</p>
+    <p>("%.2f",e)            2.72</p>
+    <p>("%.6f",e)            2.718282</p>
+    <p>("%f",e)              2.718282</p>
+    <p>("%.7f",e)            2.7182818</p>
+</code>
+        <p>
+            Remarquez que si un point et un nombre sont spécifiés, le nombre (la précision) indique combien de places
+            doivent être affichées après le point décimal.
+        </p>
+        <p>
+            Remarquez que si aucun point et précision ne sont spécifiés pour %f, la valeur par défaut est %.6f (six
+            chiffres après le point décimal).
+        </p>
+        <p>
+            Remarquez que si une précision de zéro est spécifiée, le point décimal disparaît également. Si vous voulez
+            le récupérer, vous devez l'énumérer séparément (après le spécificateur de format %f).
+        </p>
+        <p>
+            Nous pouvons spécifier à la fois une largeur et une précision en même temps. Remarquez surtout que 5.2
+            signifie une largeur totale de cinq, avec deux chiffres après la virgule. Il est très courant et naturel de
+            penser que cela signifie cinq chiffres avant la virgule et deux chiffres après, mais ce n'est pas correct.
+            Faites attention.
+        </p>
+        <code>
+    <p>printf produit</p>
+    <p>("%5.0f",e)           3</p>
+    <p>("%5.0f.",e)          3.</p>
+    <p>("%5.1f",e)           2.7</p>
+    <p>("%5.2f",e)           2.72</p>
+    <p>("%5.7f",e)           2.7182818</p>
+</code>
+        <p>
+            Nous pouvons également combiner la précision avec les drapeaux que nous avons appris auparavant, pour
+            Nous pouvons également combiner la précision avec les drapeaux que nous avons appris auparavant, pour spécifier la justification à gauche, les zéros en tête, les signes plus, etc.
+        </p>
+        <code>
+            <p>printf produit</p>
+            <p>("%5.1f",e)           2.7</p>
+            <p>("%-5.1f",e)          2.7</p>
+            <p>("%+5.1f",e)          +2.7</p>
+            <p>("%+-5.1f",e)         +2.7</p>
+            <p>("%05.1f",e)          002.7</p>
+            <p>("%+05.1f",e)         +02.7</p>
+            <p>("%05.1f",e)          02.7</p>
+            <p>("%-5.1f",e)          2.7</p>
+        </code>
+        
+        <h3 class="fw-bold">6 Concevoir le Spécificateur de Format Parfait</h3>
+        <p>
+            Si vous concevez un spécificateur de format printf, la première étape consiste à décider quel type de chose vous imprimez. Si c'est un entier, un flottant, une chaîne ou un caractère, vous ferez différents choix sur le format de base à utiliser.
+        </p>
+        <p>
+            La deuxième grande question est la largeur de votre champ. Habituellement, ce sera la taille du plus grand nombre que vous attendez jamais d'imprimer dans des circonstances normales. Parfois, cela est contrôlé par la quantité d'espace disponible sur un formulaire pré-imprimé (comme un chèque ou une facture).
+        </p>
+        <p>
+            Décidez de ce que vous souhaitez imprimer dans une variété de circonstances. Dans ce document, nous avons souvent illustré les résultats en utilisant un petit nombre positif, un petit nombre négatif, un nombre positif surdimensionné, et un nombre négatif surdimensionné. Vous devez inclure ces options ainsi que des nombres grands (mais non surdimensionnés). Concevez votre format pour le plus grand nombre que vous vous attendez normalement à voir.
+        </p>
+        
+        <h3 class="fw-bold">7 Conseils pour le Test</h3>
+        <p>
+            Le test printf inclut une variété de problèmes de correspondance. Ils sont conçus pour être difficiles, et les retours des étudiants indiquent que, si quelque chose, ils sont plus difficiles que prévu.
+        </p>
+        <p>
+            Vous pouvez utiliser le processus d'élimination pour rendre ce test très rapide et précis. Lorsque vous regardez une caractéristique commune dans la ligne de réponse, vous pouvez éliminer toutes les instructions printf qui n'ont pas cette caractéristique. Très rapidement, vous pouvez réduire vos options à une ou deux.
+        </p>
+        
+        <h3 class="fw-bold">7.1 Caractéristiques Faciles</h3>
+        <p>
+            Il est facile de voir si les petits nombres ont des zéros en tête. Si c'est le cas, il doit y avoir un zéro dans la spécification de formatage.
+        </p>
+        <p>
+            Il est facile de voir si les nombres positifs ont des signes plus. Si c'est le cas, il doit y avoir un plus dans la spécification de formatage.
+        </p>
+        
+        <h3 class="fw-bold">7.2 Avant, Entre, et Derrière</h3>
+        <p>
+            La prochaine chose à observer est le avant, entre, et derrière du nombre imprimé. Dans une spécification de formatage comme x%5dz, il y a un x avant le nombre et un z derrière le nombre. Le x et le z ne font pas partie de la spécification de format, mais ils font partie du résultat imprimé. Tout le reste qui imprime est "entre".
+        </p>
+        <p>
+            Pour décider s'il y a quelque chose avant ou derrière un nombre, regardez le nombre négatif surdimensionné. Tous les espaces avant sont sûrement avant la spécification de format. Tous les espaces derrière sont sûrement derrière la spécification de format. Voici un exemple. Si -2035065302 s'imprime comme -2035065302 , vous pouvez être sûr que la chaîne printf est %... , avec deux espaces avant la spécification de format et un espace derrière. Cela parce que toutes les positions d'impression entre (le % et ce qui l'accompagne) sont utilisées par le nombre surdimensionné.
+        </p>
+        <p>
+            Une fois que vous avez déterminé ce qui est avant et derrière, vous pouvez utiliser cette information pour correspondre aux choix de correspondance. Souvent, cela vous donnera directement la réponse.
+        </p>
+        
+        <h3 class="fw-bold">7.3 Le Signe Plus Invisible</h3>
+        <p>
+            Comparez le nombre négatif surdimensionné avec le nombre positif surdimensionné. Si le nombre positif a un espace supplémentaire devant, c'est un signe plus invisible. S'il n'y a pas d'espace supplémentaire, il n'y a pas de signe plus invisible.
+        </p>
+        
+        <h3 class="fw-bold">7.4 Justification à Gauche</h3>
+        <p>
+            Soustrayez le avant et le derrière. Regardez ce qui reste. Regardez le petit nombre négatif. Où sont imprimés les espaces supplémentaires? S'ils sont devant, le nombre est justifié à droite. S'ils sont derrière, le nombre est justifié à gauche. S'ils sont devant et derrière, vous avez fait quelque chose de mal.
+        </p>
+        
+        <h3 class="fw-bold">Conclusion</h3> <p> La fonction printf est un outil puissant pour imprimer des nombres et d'autres éléments stockés dans des variables. Avec ce pouvoir, il y a une certaine complexité. Pris tout à la fois, cette complexité rend printf presque impossible à comprendre. Mais la complexité peut être facilement décomposée en fonctionnalités simples, incluant la largeur, la précision, la signalisation, la justification et le remplissage. En reconnaissant et en comprenant ces fonctionnalités, printf deviendra un serviteur utile et convivial dans vos efforts d'impression. </p>
+        
+    </div>
+
+</body>
+
+</html>

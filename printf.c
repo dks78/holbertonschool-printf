@@ -1,14 +1,23 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "main.h"
 
 int _printf(const char *format, ...)
 {
-    int i;
+    int i, len = 0;
+    char *buffer;
+    int buffer_size = 1024;
     va_list args;
 
     if (format == NULL)
+    {
+        return (-1);
+    }
+
+    buffer = malloc(buffer_size);
+    if (buffer == NULL)
     {
         return (-1);
     }
@@ -20,38 +29,93 @@ int _printf(const char *format, ...)
         if (format[i] == '%')
         {
             i++;
-
-            if (format[i] == 'c')
+            if (format[i] == 'c') 
             {
                 char c = va_arg(args, int);
-                _putchar(c);
+                if (len >= buffer_size - 1)
+                {
+                    buffer_size *= 2;
+                    buffer = realloc(buffer, buffer_size);
+                    if (buffer == NULL)
+                    {
+                        va_end(args);
+                        return (-1);
+                    }
+                }
+                buffer[len++] = c;
             }
             else if (format[i] == 's') 
             {
                 char *str = va_arg(args, char*);
-                while (*str)
+                while (*str) 
                 {
-                    _putchar(*str);
-                    str++;
+                    if (len >= buffer_size - 1)
+                    {
+                        buffer_size *= 2;
+                        buffer = realloc(buffer, buffer_size);
+                        if (buffer == NULL)
+                        {
+                            va_end(args);
+                            return (-1);
+                        }
+                    }
+                    buffer[len++] = *str++;
                 }
             }
-            else if (format[i] == '%')
+            else if (format[i] == '%') 
             {
-                _putchar('%');
-            }
-            else
+                if (len >= buffer_size - 1)
+                {
+                    buffer_size *= 2;
+                    buffer = realloc(buffer, buffer_size);
+                    if (buffer == NULL)
+                    {
+                        va_end(args);
+                        return (-1);
+                    }
+                }
+                buffer[len++] = '%';
+            } 
+            else 
             {
-                _putchar('%');
-                _putchar(format[i]);
+                if (len >= buffer_size - 2)
+                {
+                    buffer_size *= 2;
+                    buffer = realloc(buffer, buffer_size);
+                    if (buffer == NULL)
+                    {
+                        va_end(args);
+                        return (-1);
+                    }
+                }
+                buffer[len++] = '%';
+                buffer[len++] = format[i];
             }
-        }
-        else
+        } 
+        else 
         {
-            _putchar(format[i]);
+            if (len >= buffer_size - 1)
+            {
+                buffer_size *= 2;
+                buffer = realloc(buffer, buffer_size);
+                if (buffer == NULL)
+                {
+                    va_end(args);
+                    return (-1);
+                }
+            }
+            buffer[len++] = format[i];
         }
     }
 
     va_end(args);
 
-    return 0;
+    buffer[len] = '\0';
+    for (i = 0; i < len; i++)
+    {
+        _putchar(buffer[i]);
+    }
+
+    free(buffer);
+    return len;
 }
